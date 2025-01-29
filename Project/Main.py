@@ -212,7 +212,7 @@ def draw_window(win, bird, pipes, base):
    
 def run_game():
     pygame.init()
-    pygame.display.set_caption("Programozz Pedróval - 2025")
+    pygame.display.set_caption("Manual Flappy Bird - 2025")
     
     base = Base(730)
     bird = Bird(230,350)
