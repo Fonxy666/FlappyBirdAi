@@ -167,133 +167,76 @@ def draw_window(win, birds, pipes, base):
         bird.draw(win)
     pygame.display.update()
     
-def object_mover(win, birds, pipes, base, gen, nets):
+def object_mover(win, bird, pipes, base):
     trash = []
     global score
-    global FPS    
-
-    pipe_ind = 0
-    if len(birds) > 0:
-        if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width():
-            pipe_ind = 1
-    else:
-        return False
-
-
-    for count, bird in enumerate(birds):
-        bird.move()
-        gen[count].fitness += 0.1
-
-        data_to_evaluate = ( bird.y,
-                            abs(bird.y - pipes[pipe_ind].height),
-                            abs(bird.y - pipes[pipe_ind].bottom) )
-
-        result = nets[count].activate( data_to_evaluate )
-
-        if result[0] > 0.5:
-            bird.jump()
-
+            
+    bird.move()
+    
     for pipe in pipes:
-        pipe.move()
-
-        for count,bird in enumerate(birds):
-            if pipe.collide(bird):
-                gen[count].fitness -= 1
-                birds.remove( bird )
-                nets.pop( count )
-                gen.pop( count )
-
-            if pipe.passed == False and pipe.x < bird.x:
-                pipe.passed = True
-                score += 1
-
-                for g in gen:
-                    g.fitness += 5
-                pipes.append(Pipe(WIN_WIDTH+100))
-
+        if pipe.collide(bird):
+            score -= 1
+            pass
+            
         if pipe.x + pipe.PIPE_TOP.get_width() < 0:
             trash.append(pipe)
-
-    for r in trash:
-        pipes.remove(r)
-    
-    for count, bird in enumerate(birds):        
-        if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
-            gen[count].fitness -= 1
-            birds.remove( bird )
-            nets.pop( count )
-            gen.pop( count )
+            
+        if pipe.passed == False and pipe.x < bird.x:
+            pipe.passed = True
+            score += 1
+            pipes.append(Pipe(WIN_WIDTH+100))
+                
+        pipe.move()
+                
+        for r in trash:
+            trash.remove(r)
+        
+    if bird.y + bird.img.get_height() >= 730:
+        score -= 1
+        pass
         
     base.move()
-    
-    if score > 10 and FPS< 1000:
-        FPS += 1    
 
-def run_game( genomes, config ):
-    gen = []
-    nets = []
-    birds = []
-    global generation
-    global population
+def draw_window(win, bird, pipes, base):
+    win.blit(BG_IMG, (0,0))
     
-    generation += 1
-    population = len(genomes)    
+    for pipe in pipes:
+        pipe.draw(win)
+
+    pipe_passed = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
+    win.blit(pipe_passed,(5,5) )
     
-    for ID, g in genomes:
-        net = neat.nn.FeedForwardNetwork.create( g, config )
-        nets.append( net )
-        birds.append( Bird(random.randrange(100,230),350) )
-        g.fitness = 0
-        gen.append( g )
-        
+    base.draw(win)
+    bird.draw(win)
+    pygame.display.update()
+   
+def run_game():
     pygame.init()
     pygame.display.set_caption("Programozz Pedróval - 2025")
     
     base = Base(730)
+    bird = Bird(230,350)
     pipes = [Pipe(700)]
 
-    win = pygame.display.set_mode( screen_size ) #create a window to draw onto
+    win = pygame.display.set_mode( screen_size )
     clock = pygame.time.Clock()
 
     run = True
     while run:
-        clock.tick(FPS)
-
-        #check the events, like click
+        clock.tick(30)
+            
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: #exit click?
-                run = False #stop running
-                pygame.quit() #close game engine
-                quit() #quit program
-                break                
-    
-        if object_mover( win, birds, pipes, base, gen, nets ) == False:
-            run = False
-            break
-    
-        draw_window( win, birds, pipes, base )        
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird.jump()
 
-def run( config_path ):
-    
-    try:
-        config = neat.config.Config(neat.DefaultGenome,
-                                    neat.DefaultReproduction,
-                                    neat.DefaultSpeciesSet, 
-                                    neat.DefaultStagnation,
-                                    config_path)   
-    except:
-        print("oops, file error, check the file again...")
-        return
-    
-    population = neat.Population( config )    
-    
-    population.run( run_game,50 )
-    
+        object_mover( win, bird, pipes, base )
+
+        draw_window( win, bird, pipes, base )
+
     pygame.quit()
-    quit()
-    
-if __name__ == "__main__":
-    local_dir = os.path.dirname((__file__))
-    config_path = os.path.join(local_dir, "config-feedforward.txt")
 
-    run( config_path )
+if __name__ == "__main__":
+    run_game()
