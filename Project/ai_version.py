@@ -210,7 +210,7 @@ def draw_window(win, bird, pipes, base):
     bird.draw(win)
     pygame.display.update()
    
-def run_game():
+def run_game(genomes, config):
     pygame.init()
     pygame.display.set_caption("Manual Flappy Bird - 2025")
     
@@ -237,6 +237,26 @@ def run_game():
         draw_window( win, bird, pipes, base )
 
     pygame.quit()
+    
+def run( config_path ):
+    
+    try:
+        config = neat.config.Config(neat.DefaultGenome,
+                                    neat.DefaultReproduction,
+                                    neat.DefaultSpeciesSet, 
+                                    neat.DefaultStagnation,
+                                    config_path)   
+    except:
+        print("oops, file error, check the file again...")
+        return
+    
+    population = neat.Population( config )
+    population.run( run_game,50 )
+    pygame.quit()
+    quit() 
 
 if __name__ == "__main__":
-    run_game()
+    local_dir = os.path.dirname((__file__))
+    config_path = os.path.join(local_dir, "ai-config.txt")
+
+    run( config_path )
