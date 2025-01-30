@@ -165,6 +165,16 @@ def object_mover(win, birds, pipes, base, gen, nets):
 
         result = nets[count].activate( data_to_evaluate )
         
+        if len(birds) < 20 and bird.x < pipes[pipe_ind].x :
+
+            pipe_top = pipes[pipe_ind].height
+            pipe_bottom = pipes[pipe_ind].bottom
+        
+            pygame.draw.line(win, (255, 0, 0), (bird.x, bird.y), (pipes[pipe_ind].x, pipe_top), 3)
+            pygame.draw.line(win, (255, 0, 0), (bird.x, bird.y), (pipes[pipe_ind].x, pipe_bottom), 3)
+            
+            pygame.display.update()
+        
         if result[0] > 0.5:
             bird.jump()
 
@@ -230,7 +240,6 @@ def draw_window(win, birds, pipes, base):
     pygame.display.update()
 
 def run_game( genomes, config ):
-    
     gen = []
     nets = []
     birds = []
@@ -248,7 +257,12 @@ def run_game( genomes, config ):
         gen.append( g )    
     
     pygame.init()
+    pygame.mixer.init()
     pygame.display.set_caption("Ai FLappy Bird - 2025")
+    
+    local_dir = os.path.dirname((__file__))
+    pygame.mixer.music.load(os.path.join(local_dir, "snd", "TGGS.mp3"))
+    pygame.mixer.music.play(-1, 0.0)
     
     base = Base(730)
     pipes = [Pipe(700)]
@@ -287,7 +301,7 @@ def run( config_path ):
     
     population = neat.Population( config )
 
-    population.run( run_game,50 )
+    population.run( run_game,10 )
 
     pygame.quit()
     quit()

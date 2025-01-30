@@ -212,7 +212,12 @@ def draw_window(win, bird, pipes, base):
    
 def run_game(genomes, config):
     pygame.init()
+    pygame.mixer.init()
     pygame.display.set_caption("Manual Flappy Bird - 2025")
+    
+    local_dir = os.path.dirname((__file__))
+    pygame.mixer.music.load(os.path.join(local_dir, "snd", "TGGS.mp3"))
+    pygame.mixer.music.play(-1, 0.0)
     
     base = Base(730)
     bird = Bird(230,350)
